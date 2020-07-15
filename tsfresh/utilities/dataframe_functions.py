@@ -666,6 +666,11 @@ def build_df_from_chunks(list_of_tuples, data, fc_column_names, **kwargs):
     # Convert to a pandas index and pre-sort
     idx = pd.Index(idx).sort_values()
 
+    if hasattr(data, 'rolling'):
+        idx.names = [data.column_id, data.column_sort]
+    else:
+        idx.name = data.column_id
+
     # Build the column names
     fc_columns = [x for kind in data.kinds for x in fc_column_names[kind]]
 

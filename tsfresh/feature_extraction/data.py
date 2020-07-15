@@ -184,6 +184,8 @@ class WideTsFrameAdapter(SliceableTsData):
         self.kinds = self.value_columns
 
         self.column_id_dtype = df[column_id].dtype
+        self.column_id = column_id
+        self.column_sort = column_sort
 
         if column_sort is not None:
             _check_nan(df, column_sort)
@@ -240,6 +242,8 @@ class LongTsFrameAdapter(TsData):
         self.column_value = column_value
 
         self.column_id_dtype = df[column_id].dtype
+        self.column_id = column_id
+        self.column_sort = column_sort
 
         self.kinds = df[column_kind].unique()
 
@@ -363,19 +367,21 @@ class RollingWideTsFrameAdapter(SliceableTsData):
         _check_nan(df, *value_columns)
         _check_colname(*value_columns)
 
+        self.rolling = True
+
         self.value_columns = value_columns
 
         self.kinds = self.value_columns
 
         self.column_id_dtype = df[column_id].dtype
+        self.column_id = column_id
+        self.column_sort = column_sort
 
         if column_sort is not None:
             _check_nan(df, column_sort)
             self.df_grouped = df.sort_values([column_sort]).groupby([column_id])
-            self.column_sort = column_sort
         else:
             self.df_grouped = df.groupby([column_id])
-            self.column_sort = column_id
 
         assert (
             df.groupby(column_id).count().min().min() >= window_width
