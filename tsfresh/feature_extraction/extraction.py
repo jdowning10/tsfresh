@@ -8,8 +8,6 @@ This module contains the main function to interact with tsfresh: extract feature
 import logging
 import warnings
 
-import pandas as pd
-
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.data import to_tsdata

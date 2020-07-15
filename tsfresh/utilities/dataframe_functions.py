@@ -6,13 +6,10 @@ Utility functions for handling the DataFrame conversions to the internal normali
 (see ``normalize_input_to_internal_representation``) or on how to handle ``NaN`` and ``inf`` in the DataFrames.
 """
 import warnings
-from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 
-import itertools
-import pdb
 from tsfresh import defaults
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
 from tsfresh.feature_extraction import feature_calculators
