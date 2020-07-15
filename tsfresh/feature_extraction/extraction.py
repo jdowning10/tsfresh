@@ -247,7 +247,7 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                                     function_kwargs=kwargs)
     distributor.close()
 
-    fc_column_names = create_fc_column_names(data, default_fc_parameters, kind_to_fc_parameters)
+    fc_column_names = create_fc_column_names(data.kinds, default_fc_parameters, kind_to_fc_parameters)
 
     return_df = build_df_from_chunks(result, data, fc_column_names, dtype=float)
 

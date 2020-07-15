@@ -685,10 +685,10 @@ def build_df_from_chunks(list_of_tuples, data, fc_column_names, **kwargs):
     return df
 
 
-def create_fc_column_names(data, default_fc_parameters, kind_to_fc_parameters):
+def create_fc_column_names(kinds, default_fc_parameters, kind_to_fc_parameters):
     fc_parameters_kinds = {}
 
-    for kind in data.kinds:
+    for kind in kinds:
         if kind_to_fc_parameters and kind in kind_to_fc_parameters:
             fc_parameters_kinds[kind] = kind_to_fc_parameters[kind]
         else:
