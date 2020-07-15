@@ -39,7 +39,7 @@ def _function_with_partly_reduce(chunk_list, map_function, kwargs):
     """
     kwargs = kwargs or {}
     results = (map_function(chunk, **kwargs) for chunk in chunk_list)
-    results = list(itertools.chain.from_iterable(results))
+    results = list(results)
     return results
 
 

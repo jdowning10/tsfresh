@@ -12,9 +12,10 @@ import numpy as np
 import pandas as pd
 
 import itertools
-
+import pdb
 from tsfresh import defaults
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, DistributorBaseClass
+from tsfresh.feature_extraction import feature_calculators
 
 
 def check_for_nans_in_columns(df, columns=None):
@@ -648,29 +649,73 @@ def add_sub_time_series_index(df_or_dict, sub_length, column_id=None, column_sor
     return df
 
 
-def pivot_list(list_of_tuples, **kwargs):
+def build_df_from_chunks(list_of_tuples, data, fc_column_names, **kwargs):
     """
-    Helper function to turn an iterable of tuples with three entries into a dataframe.
+    Helper function to turn a list of tuples into a Pandas DataFrame.
 
-    The input ``list_of_tuples`` needs to be an iterable with tuples containing three
-    entries: (a, b, c).
-    Out of this, a pandas dataframe will be created with all a's as index,
-    all b's as columns and all c's as values.
+    list_of_tuples = [(chunk_id, variable, values), ...]
 
-    It basically does a pd.pivot(first entry, second entry, third entry),
-    but optimized for non-pandas input (= python list of tuples).
+    Where values is a list of the calculated features.
     """
-    return_df_dict = defaultdict(dict)
-    for chunk_id, variable, value in list_of_tuples:
-        # we turn it into a nested mapping `column -> index -> value`
-        return_df_dict[variable][chunk_id] = value
 
-    # the mapping column -> {index -> value}
-    # is now a dict of dicts. The pandas dataframe
-    # constructor will peel this off:
-    # first, the keys of the outer dict (the column)
-    # will turn into a column header and the rest into a column
-    # the rest is {index -> value} which will be turned into a
-    # column with index.
-    # All index will be aligned.
-    return pd.DataFrame(return_df_dict, **kwargs)
+    # Calculate the index of the complete df by iterating through the chunk
+    idx = []
+    for chunk_id, kind, values in list_of_tuples:
+        idx.append(chunk_id)
+
+    # If there are multiple kinds then there will be duplicate chunk_ids
+    # Therefore remove them using the set command
+    idx = set(idx)
+    # Convert to a pandas index and pre-sort
+    idx = pd.Index(idx).sort_values()
+
+    # Build the column names
+    fc_columns = [x for kind in data.kinds for x in fc_column_names[kind]]
+
+    # Assign memory for resulting df
+    df = pd.DataFrame(columns=fc_columns, index=idx, **kwargs)
+
+    # Iterate through list_of_tuples and substitute into df
+    for chunk_id, kind, values in list_of_tuples:
+        # placing each list of features into the df
+        df.loc[chunk_id, fc_column_names[str(kind)]] = values
+
+    return df
+
+
+def create_fc_column_names(data, default_fc_parameters, kind_to_fc_parameters):
+    fc_parameters_kinds = {}
+
+    for kind in data.kinds:
+        if kind_to_fc_parameters and kind in kind_to_fc_parameters:
+            fc_parameters_kinds[kind] = kind_to_fc_parameters[kind]
+        else:
+            fc_parameters_kinds[kind] = default_fc_parameters
+
+    # Create list of feature columns
+    fc_column_names = {}
+    for kind, fc_parameters in fc_parameters_kinds.items():
+        column_names = []
+        for fc_name, fc_param in fc_parameters.items():
+            func = getattr(feature_calculators, fc_name)
+
+            # If it has a required index type, check that the data has the right index type.
+            index_type = getattr(func, "index_type", None)
+
+            # Because the index_type from roll_time_series is int then any time series functions will be removed from the computation
+            if index_type is None:
+                if fc_param is None:
+                    # For function that have no parameters
+                    column_names.append(fc_name)
+                else:
+                    # For function that have parameters iterate over each and concatencate
+                    for fc_p in fc_param:
+                        fc_p_str = "__".join(
+                            [f"{key}_{val}" for key, val in fc_p.items()]
+                        )
+                        column_names.append(
+                            f"{fc_name}__{fc_p_str}"
+                        )
+        fc_column_names[kind] = [f"{kind}__{col_name}" for col_name in column_names]
+
+    return fc_column_names

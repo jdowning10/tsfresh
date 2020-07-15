@@ -181,6 +181,8 @@ class WideTsFrameAdapter(SliceableTsData):
 
         self.value_columns = value_columns
 
+        self.kinds = self.value_columns
+
         self.column_id_dtype = df[column_id].dtype
 
         if column_sort is not None:
@@ -238,6 +240,8 @@ class LongTsFrameAdapter(TsData):
         self.column_value = column_value
 
         self.column_id_dtype = df[column_id].dtype
+
+        self.kinds = df[column_kind].unique()
 
         if column_sort is not None:
             _check_nan(df, column_sort)
@@ -360,6 +364,8 @@ class RollingWideTsFrameAdapter(SliceableTsData):
         _check_colname(*value_columns)
 
         self.value_columns = value_columns
+
+        self.kinds = self.value_columns
 
         self.column_id_dtype = df[column_id].dtype
 

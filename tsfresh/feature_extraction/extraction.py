@@ -18,7 +18,7 @@ from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
     DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
-from tsfresh.utilities.dataframe_functions import pivot_list
+from tsfresh.utilities.dataframe_functions import build_df_from_chunks, create_fc_column_names
 
 _logger = logging.getLogger(__name__)
 
@@ -249,13 +249,12 @@ def _do_extraction(df, column_id, column_value, column_kind, column_sort,
                                     function_kwargs=kwargs)
     distributor.close()
 
-    return_df = pivot_list(result, dtype=float)
+    fc_column_names = create_fc_column_names(data, default_fc_parameters, kind_to_fc_parameters)
+
+    return_df = build_df_from_chunks(result, data, fc_column_names, dtype=float)
 
     # copy the type of the index
     return_df.index = return_df.index.astype(data.column_id_dtype)
-
-    # Sort by index to be backward compatible
-    return_df = return_df.sort_index()
 
     return return_df
 
@@ -319,9 +318,9 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                     result = [("", func(x))]
 
             for key, item in result:
-                feature_name = str(kind) + "__" + func.__name__
-                if key:
-                    feature_name += "__" + str(key)
-                yield (sample_id, feature_name, item)
+                # feature_name = str(kind) + "__" + func.__name__
+                # if key:
+                #     feature_name += "__" + str(key)
+                yield item
 
-    return list(_f())
+    return sample_id, str(kind), list(_f())
