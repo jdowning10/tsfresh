@@ -258,7 +258,7 @@ class LongTsFrameAdapter(TsData):
 
     def __iter__(self):
         for group_key, group in self.df_grouped:
-            yield Timeseries(group_key[0], str(group_key[1]), group[self.column_value])
+            yield Timeseries(group_key[0], group_key[1], group[self.column_value])
 
 
 class TsDictAdapter(TsData):
@@ -297,7 +297,7 @@ class TsDictAdapter(TsData):
     def __iter__(self):
         for kind, grouped_df in self.grouped_dict.items():
             for ts_id, group in grouped_df:
-                yield Timeseries(ts_id, str(kind), group[self.column_value])
+                yield Timeseries(ts_id, kind, group[self.column_value])
 
     def __len__(self):
         return sum(grouped_df.ngroups for grouped_df in self.grouped_dict.values())

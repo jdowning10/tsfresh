@@ -680,44 +680,6 @@ def build_df_from_chunks(list_of_tuples, data, fc_column_names, **kwargs):
     # Iterate through list_of_tuples and substitute into df
     for chunk_id, kind, values in list_of_tuples:
         # placing each list of features into the df
-        df.loc[chunk_id, fc_column_names[str(kind)]] = values
+        df.loc[chunk_id, fc_column_names[kind]] = values
 
     return df
-
-
-def create_fc_column_names(kinds, default_fc_parameters, kind_to_fc_parameters):
-    fc_parameters_kinds = {}
-
-    for kind in kinds:
-        if kind_to_fc_parameters and kind in kind_to_fc_parameters:
-            fc_parameters_kinds[kind] = kind_to_fc_parameters[kind]
-        else:
-            fc_parameters_kinds[kind] = default_fc_parameters
-
-    # Create list of feature columns
-    fc_column_names = {}
-    for kind, fc_parameters in fc_parameters_kinds.items():
-        column_names = []
-        for fc_name, fc_param in fc_parameters.items():
-            func = getattr(feature_calculators, fc_name)
-
-            # If it has a required index type, check that the data has the right index type.
-            index_type = getattr(func, "index_type", None)
-
-            # Because the index_type from roll_time_series is int then any time series functions will be removed from the computation
-            if index_type is None:
-                if fc_param is None:
-                    # For function that have no parameters
-                    column_names.append(fc_name)
-                else:
-                    # For function that have parameters iterate over each and concatencate
-                    for fc_p in fc_param:
-                        fc_p_str = "__".join(
-                            [f"{key}_{val}" for key, val in fc_p.items()]
-                        )
-                        column_names.append(
-                            f"{fc_name}__{fc_p_str}"
-                        )
-        fc_column_names[kind] = [f"{kind}__{col_name}" for col_name in column_names]
-
-    return fc_column_names

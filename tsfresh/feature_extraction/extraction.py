@@ -11,12 +11,12 @@ import warnings
 from tsfresh import defaults
 from tsfresh.feature_extraction import feature_calculators
 from tsfresh.feature_extraction.data import to_tsdata
-from tsfresh.feature_extraction.settings import ComprehensiveFCParameters
+from tsfresh.feature_extraction.settings import ComprehensiveFCParameters, create_fc_column_names
 from tsfresh.utilities import profiling
 from tsfresh.utilities.distribution import MapDistributor, MultiprocessingDistributor, \
     DistributorBaseClass
 from tsfresh.utilities.string_manipulation import convert_to_output_format
-from tsfresh.utilities.dataframe_functions import build_df_from_chunks, create_fc_column_names
+from tsfresh.utilities.dataframe_functions import build_df_from_chunks
 
 _logger = logging.getLogger(__name__)
 
@@ -321,4 +321,4 @@ def _do_extraction_on_chunk(chunk, default_fc_parameters, kind_to_fc_parameters)
                 #     feature_name += "__" + str(key)
                 yield item
 
-    return sample_id, str(kind), list(_f())
+    return sample_id, kind, list(_f())
